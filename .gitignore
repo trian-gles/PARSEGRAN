@@ -1,3 +1,4 @@
 *.so
 .vscode
 *.o
+fparser27/*.o
