@@ -6,7 +6,8 @@ typedef struct {
 	float waveSampInc; 
 	float ampSampInc; 
 	float wavePhase; 
-	float ampPhase; 
+	float ampPhase;
+	float amp;	
 	int dur; 
 	float panR; 
 	float panL; 
@@ -35,6 +36,16 @@ private:
 	double x1;
 	double x2;
 
+	FunctionParser* funcA;
+	double minA;
+	double maxA;
+	double lastA;
+
+	FunctionParser* funcB;
+	double minB;
+	double maxB;
+	double lastB;
+
 	FunctionParser* funcRate;
 	double minRate;
 	double maxRate;
@@ -44,10 +55,14 @@ private:
 	FunctionParser* funcFreq;
 	double minFreq;
 	double maxFreq;
+	FunctionParser* funcAmp;
+	double minAmp;
+	double maxAmp;
 	FunctionParser* funcPan;
 	double minPan;
 	double maxPan;
 
+	double lastAmp;
 	double lastRate;
 	double lastDur;
 	double lastFreq;

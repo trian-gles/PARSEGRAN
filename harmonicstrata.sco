@@ -27,24 +27,26 @@ outskip = 0
 dur = 10
 
 amp = maketable("line", 1000, 0, 0, 1, 1, 16, 1, 17, 0)
+x1 = maketable("line", 1000, 0, 0, 1, 8)
 
-ratefunc = "u1/100"
+
+ratefunc = "u1/1000"
 ratemin = 0.0001
 ratemax = 1
 
-durfunc = "u2/50"
+durfunc = "0.05"
 durmin = 0.0001
 durmax = 1
 
-freqfunc = "2^(u2*5+8)"
+freqfunc = "100 * int(u2 * 16) * (0.95 + u3 / 10)"
 freqmin = 20
 freqmax = 20000
 
-ampfunc = "1.0"
+ampfunc = "((0.5 - abs(0.5 - u3)) * 2)^2"
 ampmin = 0
-ampmax = 1.1
+ampmax = 1
 
-panfunc = "u2"
+panfunc = "(sin((u2+x1) * 2 * 3.1415926) + 1) / 2"
 panmin = 0
 panmax = 1
 
@@ -53,6 +55,6 @@ wave = maketable("wave", 1000, "sine")
 env = maketable("window", 1000, "hanning")
 
 PARSEGRAN(outskip, dur,  2000 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
-freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env)
+freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env, x1)
 
 

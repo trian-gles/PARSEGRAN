@@ -54,14 +54,17 @@ int PARSEGRAN::init(double p[], int n_args)
 		p9: freqExpr
 		p10: freqMin
 		p11: freqMax
-		p12: panExpr
-		p13: panMin
-		p14: panMax
-		p15: wavetable**
-		p16: grainEnv**
-		p17: x1* (optional)
-		p18: x2* (optional)
-		p19: grainLimit=1500 (optional)
+		p12: ampExpr
+		p13: ampMin
+		p14: ampMax
+		p15: panExpr
+		p16: panMin
+		p17: panMax
+		p18: wavetable**
+		p19: grainEnv**
+		p20: x1* (optional)
+		p21: x2* (optional)
+		p22: grainLimit=1500 (optional)
 
 		* may recieve pfield values
 		** must be passed pfield maketables.
@@ -72,9 +75,9 @@ int PARSEGRAN::init(double p[], int n_args)
 	if (outputChannels() > 2)
 	      return die("PARSEGRAN", "Output must be mono or stereo.");
 
-	if (n_args < 17)
-		return die("PARSEGRAN", "21 arguments are required");
-	else if (n_args > 20)
+	if (n_args < 20)
+		return die("PARSEGRAN", "20 arguments are required");
+	else if (n_args > 222)
 		return die("PARSEGRAN", "too many arguments");
 	grainEnvLen = 0;
 	wavetableLen = 0;
@@ -83,8 +86,8 @@ int PARSEGRAN::init(double p[], int n_args)
 	newGrainCounter = 0;
 
 	// init tables
-	wavetable = (double *) getPFieldTable(15, &wavetableLen);
-	grainEnv = (double *) getPFieldTable(16, &grainEnvLen);
+	wavetable = (double *) getPFieldTable(18, &wavetableLen);
+	grainEnv = (double *) getPFieldTable(19, &grainEnvLen);
 	
 
 	funcRate = getfunc(3);
@@ -99,19 +102,20 @@ int PARSEGRAN::init(double p[], int n_args)
 	minFreq = p[10];
 	maxFreq = p[11];
 
-	funcPan = getfunc(12);
-	minPan = p[13];
-	maxPan = p[14];
+	funcAmp = getfunc(12);
+	minAmp = p[13];
+	maxAmp = p[14];
+
+	funcPan = getfunc(15);
+	minPan = p[16];
+	maxPan = p[17];
 
 	x1 = 0;
 	x2 = 0;
 
-	if (n_args > 17)
+	if (n_args > 22)
 	{
-		x1 = p[17];
-		x2 = p[18];
-
-		grainLimit = p[19];
+		grainLimit = p[22];
 		if (grainLimit > MAXGRAINS)
 		{
 			rtcmix_advise("STGRAN2", "user provided max grains exceeds limit, lowering to 1500");
@@ -208,6 +212,7 @@ void PARSEGRAN::resetgrain(Grain* grain)
 	grain->isplaying = true;
 	grain->wavePhase = 0;
 	grain->ampPhase = 0;
+	grain->amp = (float)callfunc(funcAmp, minAmp, maxAmp, lastAmp, u1, u2, u3, u4);
 	grain->panR = panR;
 	grain->panL = 1 - panR; // separating these in RAM means fewer sample rate calculations
 	(*grain).dur = (int)round(grainDurSamps);
@@ -219,9 +224,11 @@ void PARSEGRAN::resetgrain(Grain* grain)
 // update pfields
 void PARSEGRAN::doupdate()
 {
-	double p[3];
-	update(p, 3);
+	double p[22];
+	update(p, 22, 1 << 2 | 1 << 20 | 1 << 21);
 	amp =(float) p[2];
+	x1 =(float) p[20];
+	x2 = (float) p[21];
 
 }
 
@@ -251,7 +258,7 @@ int PARSEGRAN::run()
 				else
 				{
 					// should include an interpolation option at some point
-					float grainAmp = oscili(1, currGrain->ampSampInc, grainEnv, grainEnvLen, &((*currGrain).ampPhase));
+					float grainAmp = currGrain->amp * oscili(1, currGrain->ampSampInc, grainEnv, grainEnvLen, &((*currGrain).ampPhase));
 					float grainOut = oscili(grainAmp,currGrain->waveSampInc, wavetable, wavetableLen, &((*currGrain).wavePhase));
 					out[0] += grainOut * currGrain->panL;
 					out[1] += grainOut * currGrain->panR;

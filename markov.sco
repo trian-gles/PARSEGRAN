@@ -25,30 +25,36 @@ load("./libPARSEGRAN.so")
 	*/
 outskip = 0
 dur = 20
+layers = 6
 
 amp = maketable("line", 1000, 0, 0, 1, 1, 16, 1, 17, 0)
 
-ratefunc = "l * (1 + (.1 - u1*0.2))"
-ratemin = 0.001
+ratefunc = "l * (1 + (.5 - u1))"
+ratemin = 0.0003
 ratemax = 1
 
 durfunc = "u2/30"
 durmin = 0.0001
 durmax = 1
 
-freqfunc = "l * 2^(0.75-u2*1.5)"
+freqfunc = "l * 2^(0.25 - u2 / 2)"
 freqmin = 20
 freqmax = 20000
+
+ampfunc = "if(u4>0.6, 0.1, 1)"
+ampmin = 0
+ampmax = 1
 
 panfunc = "u2"
 panmin = 0
 panmax = 1
 
 
-wave = maketable("wave", 1000, "square")
+wave = maketable("wave", 1000, "sine")
 env = maketable("window", 1000, "hanning")
-
-PARSEGRAN(outskip, dur,  1500 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
-freqfunc, freqmin, freqmax, panfunc, panmin, panmax, wave, env)
-
+for (i = 0; i < layers; i=i+1)
+{
+	PARSEGRAN(outskip, dur,  1500 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
+	freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env)
+}
 
