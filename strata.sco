@@ -27,7 +27,7 @@ outskip = 0
 dur = 10
 
 amp = maketable("line", 1000, 0, 0, 1, 1, 16, 1, 17, 0)
-
+layers = 10
 ratefunc = "u1/100"
 ratemin = 0.0001
 ratemax = 1
@@ -51,8 +51,10 @@ panmax = 1
 
 wave = maketable("wave", 1000, "sine")
 env = maketable("window", 1000, "hanning")
+for (i=0; i<layers;i=i+1){
+	PARSEGRAN(outskip, dur,  2000 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
+	freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env)
+}
 
-PARSEGRAN(outskip, dur,  2000 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
-freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env)
 
 

@@ -15,7 +15,7 @@
 
 #define MAXGRAINS 1500
 
-PARSEGRAN::PARSEGRAN() : branch(0), lastRate(0), lastDur(0), lastFreq(0), lastPan(0)
+PARSEGRAN::PARSEGRAN() : branch(0), funcA(NULL), lastA(0), funcB(NULL), lastB(0), lastRate(0), lastDur(0), lastFreq(0), lastPan(0)
 {
 }
 
@@ -64,7 +64,9 @@ int PARSEGRAN::init(double p[], int n_args)
 		p19: grainEnv**
 		p20: x1* (optional)
 		p21: x2* (optional)
-		p22: grainLimit=1500 (optional)
+		p22: funcA (optional)
+		p23: funcB (optional)
+		p24: grainLimit=1500 (optional)
 
 		* may recieve pfield values
 		** must be passed pfield maketables.
@@ -77,7 +79,7 @@ int PARSEGRAN::init(double p[], int n_args)
 
 	if (n_args < 20)
 		return die("PARSEGRAN", "20 arguments are required");
-	else if (n_args > 222)
+	else if (n_args > 26)
 		return die("PARSEGRAN", "too many arguments");
 	grainEnvLen = 0;
 	wavetableLen = 0;
@@ -114,8 +116,15 @@ int PARSEGRAN::init(double p[], int n_args)
 	x2 = 0;
 
 	if (n_args > 22)
+		funcA = getfunc(22);
+
+	if (n_args > 23)
+		funcB = getfunc(23);
+
+
+	if (n_args > 24)
 	{
-		grainLimit = p[22];
+		grainLimit = p[24];
 		if (grainLimit > MAXGRAINS)
 		{
 			rtcmix_advise("STGRAN2", "user provided max grains exceeds limit, lowering to 1500");
@@ -156,7 +165,7 @@ FunctionParser* PARSEGRAN::getfunc(int pfieldNum)
 
 	FunctionParser* fp = new FunctionParser();
 	// use orig string so char offsets in err msg will be right
-	int ret = fp->Parse(fieldstr, "u1,u2,u3,u4,l,x1,x2");
+	int ret = fp->Parse(fieldstr, "u1,u2,u3,u4,l,x1,x2,a,b");
 	if (ret >= 0)
 		printf("Parser error for expression \"%s\" at character %d ('%c'): %s.",
 					fieldstr, ret, fieldstr[ret], fp->ErrorMsg());
@@ -165,14 +174,14 @@ FunctionParser* PARSEGRAN::getfunc(int pfieldNum)
 	return fp;
 }
 
-double PARSEGRAN::callfunc(FunctionParser* func, double min, double max, double last, double u1, double u2, double u3, double u4)
+double PARSEGRAN::callfunc(FunctionParser* func, double min, double max, double last, double u1, double u2, double u3, double u4, double a, double b)
         // Returns a value within a range close to a preferred value
                     // tightness: 0 max away from mid
                      //               1 even distribution
                       //              2+amount closeness to mid
                       //              no negative allowed
 {
-	double vars[] = {u1, u2, u3, u4, last, x1, x2};
+	double vars[] = {u1, u2, u3, u4, last, x1, x2, a, b};
 	double num;
 	num = func->Eval(vars);
 	if (num < min)
@@ -184,6 +193,16 @@ double PARSEGRAN::callfunc(FunctionParser* func, double min, double max, double 
 	return(num);
 }
 
+double PARSEGRAN::callabfunc(FunctionParser* func, double last, double u1, double u2, double u3, double u4, double a, double b){
+	if (func){
+		double vars[] = {u1, u2, u3, u4, last, x1, x2, a, b};
+		return func->Eval(vars);
+	}
+	else{
+		return 0;
+	}
+}
+
 // set new parameters and turn on an idle grain
 void PARSEGRAN::resetgrain(Grain* grain)
 {
@@ -193,16 +212,23 @@ void PARSEGRAN::resetgrain(Grain* grain)
 	double u2 = ((double) rand() / (RAND_MAX));
 	double u3 = ((double) rand() / (RAND_MAX));
 	double u4 = ((double) rand() / (RAND_MAX));
-	float freq = callfunc(funcFreq, minFreq, maxFreq, lastFreq, u1, u2, u3, u4);
+	double a = callabfunc(funcA, lastA, u1, u2, u3, u4, lastA, lastB);
+	lastA = a;
+	double b = callabfunc(funcB, lastB, u1, u2, u3, u4, lastA, lastB);
+	lastB = b;
+
+	//std::cout << "a, b = " << a << " " << b << "\n";
+
+	float freq = callfunc(funcFreq, minFreq, maxFreq, lastFreq, u1, u2, u3, u4, a, b);
 	lastFreq = freq;
 	//std::cout << "setting dur" << "\n";
-	float grainDurSamps =  callfunc(funcDur, minDur, maxDur, lastDur, u1, u2, u3, u4) * SR;
+	float grainDurSamps =  callfunc(funcDur, minDur, maxDur, lastDur, u1, u2, u3, u4, a, b) * SR;
 	lastDur = grainDurSamps / SR;
 	//std::cout << "setting pan" << "\n";
-	float panR = (float) callfunc(funcPan, minPan, maxPan, lastPan, u1, u2, u3, u4);
+	float panR = (float) callfunc(funcPan, minPan, maxPan, lastPan, u1, u2, u3, u4, a, b);
 	lastPan = panR;
 	//std::cout << "setting counter" << "\n";
-	newGrainCounter = (int)round(SR * callfunc(funcRate, minRate, maxRate, lastRate, u1, u2, u3, u4));
+	newGrainCounter = (int)round(SR * callfunc(funcRate, minRate, maxRate, lastRate, u1, u2, u3, u4, a, b));
 	lastRate = newGrainCounter / SR;
 	//std::cout << "setting freq" << "\n";
 	
@@ -212,7 +238,7 @@ void PARSEGRAN::resetgrain(Grain* grain)
 	grain->isplaying = true;
 	grain->wavePhase = 0;
 	grain->ampPhase = 0;
-	grain->amp = (float)callfunc(funcAmp, minAmp, maxAmp, lastAmp, u1, u2, u3, u4);
+	grain->amp = (float)callfunc(funcAmp, minAmp, maxAmp, lastAmp, u1, u2, u3, u4, a, b);
 	grain->panR = panR;
 	grain->panL = 1 - panR; // separating these in RAM means fewer sample rate calculations
 	(*grain).dur = (int)round(grainDurSamps);

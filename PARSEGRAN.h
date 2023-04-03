@@ -26,7 +26,9 @@ public:
 	virtual int run();
 	void addgrain();
 	FunctionParser* getfunc(int index);
-	double callfunc(FunctionParser* fp, double max, double min, double lasts, double u1, double u2, double u3, double u4);
+	FunctionParser* getabfunc(int index);
+	double callfunc(FunctionParser* fp, double max, double min, double last, double u1, double u2, double u3, double u4, double a, double b);
+	double callabfunc(FunctionParser* fp, double last, double u1, double u2, double u3, double u4, double a, double b);
 	void resetgrain(Grain* grain);
 
 private:
@@ -37,13 +39,9 @@ private:
 	double x2;
 
 	FunctionParser* funcA;
-	double minA;
-	double maxA;
 	double lastA;
 
 	FunctionParser* funcB;
-	double minB;
-	double maxB;
 	double lastB;
 
 	FunctionParser* funcRate;

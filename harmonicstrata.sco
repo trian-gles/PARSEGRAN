@@ -24,10 +24,10 @@ load("./libPARSEGRAN.so")
 		p19: grainLimit=1500 (optional)
 	*/
 outskip = 0
-dur = 10
+dur = 20
 
 amp = maketable("line", 1000, 0, 0, 1, 1, 16, 1, 17, 0)
-x1 = maketable("line", 1000, 0, 0, 1, 8)
+x1 = maketable("line", "nonorm", 1000, 0, 0, 1, 16)
 
 
 ratefunc = "u1/1000"
