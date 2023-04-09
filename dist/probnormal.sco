@@ -1,5 +1,5 @@
 rtsetparams(44100, 2)
-load("./libPARSEGRAN.so")
+load("../libPARSEGRAN.so")
 
         /* NEW Args:
 		p0: outskip

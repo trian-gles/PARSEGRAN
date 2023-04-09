@@ -14,14 +14,19 @@ load("./libPARSEGRAN.so")
 		p9: freqExpr
 		p10: freqMin
 		p11: freqMax
-		p12: panExpr
-		p13: panMin
-		p14: panMax
-		p15: wavetable**
-		p16: grainEnv**
-		p17: x1* (optional)
-		p18: x2* (optional)
-		p19: grainLimit=1500 (optional)
+		p12: ampExpr
+		p13: ampMin
+		p14: ampMax
+		p15: panExpr
+		p16: panMin
+		p17: panMax
+		p18: wavetable**
+		p19: grainEnv**
+		p20: x1* (optional)
+		p21: x2* (optional)
+		p23: funcA (optional)
+		p24: funcB (optional)
+		p25: grainLimit=1500 (optional)
 	*/
 outskip = 0
 dur = 20
