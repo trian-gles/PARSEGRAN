@@ -1,5 +1,5 @@
 rtsetparams(44100, 2)
-load("./libPARSEGRAN.so")
+load("../libPARSEGRAN.so")
 
         /* NEW Args:
 		p0: outskip
@@ -32,25 +32,25 @@ outskip = 0
 dur = 10
 
 amp = maketable("line", 1000, 0, 0, 1, 1, 16, 1, 17, 0)
-layers = 10
+layers = 1
 
 ratefunc = "u1/100"
 ratemin = 0.0001
 ratemax = 1
 
 durfunc = "u2/50"
-durmin = 0.0001
+durmin = 0.0008
 durmax = 1
 
-freqfunc = "2^(u2*5+8)"
+freqfunc = "2^(u3*5+8)"
 freqmin = 20
 freqmax = 20000
 
-ampfunc = "1.0"
+ampfunc = "1"
 ampmin = 0
-ampmax = 1.1
+ampmax = 1
 
-panfunc = "u2"
+panfunc = "u4"
 panmin = 0
 panmax = 1
 

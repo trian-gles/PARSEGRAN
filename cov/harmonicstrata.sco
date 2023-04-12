@@ -29,44 +29,37 @@ load("../libPARSEGRAN.so")
 		p25: grainLimit=1500 (optional)
 	*/
 outskip = 0
-dur = 10
+dur = 20
 
 amp = maketable("line", 1000, 0, 0, 1, 1, 16, 1, 17, 0)
-layers = 2
-ratefunc = "0.01 + (1-u2) / 10"
-ratemin = 0.001
+x1 = maketable("line", "nonorm", 1000, 0, 0, 1, 16)
+
+
+ratefunc = "u1/1000"
+ratemin = 0.0001
 ratemax = 1
 
-durfunc = "0.01 + (1-u2) / 10"
+durfunc = "0.05"
 durmin = 0.0001
 durmax = 1
 
-freqfunc = "2^(7 + a * 4)"
-
-
+freqfunc = "100 * int(u2 * 16) * (0.95 + u3 / 10)"
 freqmin = 20
 freqmax = 20000
 
-ampfunc = "1.0"
+ampfunc = "((0.5 - abs(0.5 - u3)) * 2)^2"
 ampmin = 0
-ampmax = 1.1
+ampmax = 1
 
-panfunc = "0.5"
+panfunc = "(sin((u2+x1) * 2 * 3.1415926) + 1) / 2"
 panmin = 0
 panmax = 1
 
 
-x1 = ".5 * 2" // alpha
-x2 = ".5 * 2" // beta
-
-
-afunc = "((u1)^(.5)) / (((u1)^(.5)) + ((1-u1)^(.5)))"
-
-
-
 wave = maketable("wave", 1000, "sine")
 env = maketable("window", 1000, "hanning")
-for (i=0; i<layers;i=i+1){
-	PARSEGRAN(outskip, dur,  2000 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
-	freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env, x1, x2, afunc)
-}
+
+PARSEGRAN(outskip, dur,  2000 * amp, ratefunc, ratemin, ratemax, durfunc, durmin, durmax, 
+freqfunc, freqmin, freqmax, ampfunc, ampmin, ampmax, panfunc, panmin, panmax, wave, env, x1)
+
+
